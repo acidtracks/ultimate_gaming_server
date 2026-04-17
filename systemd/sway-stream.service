@@ -1,0 +1,28 @@
+[Unit]
+Description=Sway headless streaming compositor
+After=graphical-session.target
+
+[Service]
+Type=simple
+Environment=WLR_BACKENDS=headless
+Environment=WLR_HEADLESS_OUTPUTS=1
+Environment=WLR_NO_HARDWARE_CURSORS=1
+# Force le renderer pixman (CPU) : buffers SHM purs, pas de DMA-BUF → compatible NVIDIA open
+Environment=WLR_RENDERER=pixman
+ExecStart=/usr/bin/sway --config /etc/ultimate-gaming-server/sway-stream
+# Attend le socket Wayland puis publie son nom dans /tmp/sway-stream-display
+ExecStartPost=/bin/sh -c '\
+    for i in $(seq 1 30); do \
+        S=$(ls /run/user/1000/wayland-* 2>/dev/null \
+            | grep -E "wayland-[0-9]+$" | grep -v "wayland-1$"); \
+        if [ -n "$S" ]; then \
+            basename "$S" > /tmp/sway-stream-display; \
+            exit 0; \
+        fi; \
+        sleep 0.3; \
+    done; exit 1'
+ExecStopPost=/bin/sh -c 'rm -f /tmp/sway-stream-display'
+Restart=no
+
+[Install]
+WantedBy=graphical-session.target

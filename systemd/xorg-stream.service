@@ -1,0 +1,21 @@
+[Unit]
+Description=X11 headless stream server (NvFBC)
+After=graphical-session.target
+# Démarre à la demande de sunshine.service et reste actif jusqu'à la fin de la session
+# (ne pas arrêter entre les streams — chaque redémarrage d'Xorg perturbe le DRM de Hyprland)
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/start-xorg-stream
+# Génère le cookie xauth après démarrage (attend que le socket X soit créé)
+ExecStartPost=/bin/sh -c '\
+    for i in $(seq 1 20); do \
+        DISP=$(grep "^display=" /tmp/xorg-stream-info 2>/dev/null | cut -d= -f2); \
+        [ -n "$DISP" ] && XAUTHORITY=/tmp/xauth-stream xauth add "$DISP" . $(mcookie) && exit 0; \
+        sleep 0.5; \
+    done; exit 1'
+ExecStopPost=/bin/sh -c 'rm -f /tmp/xauth-stream /tmp/xorg-stream-info'
+Restart=no
+
+[Install]
+# Pas de WantedBy : ne démarre pas au login, seulement à la demande de sunshine.service

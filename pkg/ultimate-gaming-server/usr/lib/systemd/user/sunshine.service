@@ -1,0 +1,20 @@
+[Unit]
+Description=Sunshine Game Stream Server
+After=graphical-session.target xdg-desktop-portal-hyprland.service
+Conflicts=sunshine.socket
+Wants=sunshine-watchdog.service
+
+[Service]
+# Tue toute instance existante avant de démarrer (le '-' ignore l'échec si aucun process)
+ExecStartPre=-/usr/bin/pkill -x sunshine
+ExecStart=/usr/bin/start-sunshine
+
+# Relance le socket dès que Sunshine s'arrête (prêt pour la prochaine connexion)
+ExecStopPost=systemctl --user --no-block stop sunshine-watchdog.service
+ExecStopPost=systemctl --user --no-block start sunshine.socket
+
+# On retire 'Restart=always' pour éviter qu'il ne boucle sans raison
+Restart=no
+
+[Install]
+WantedBy=default.target

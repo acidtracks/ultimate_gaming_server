@@ -1,0 +1,88 @@
+#!/usr/bin/env python3
+"""
+start-xorg-stream — Démarre Xorg sur le prochain VT libre pour le streaming NvFBC.
+
+Stocke le VT et le display utilisés dans /tmp/xorg-stream-info pour switch-display.
+"""
+
+import os
+import subprocess
+import sys
+import time
+
+
+XAUTH_FILE = "/tmp/xauth-stream"
+INFO_FILE = "/tmp/xorg-stream-info"
+XORG_CONF = "xorg-stream.conf"
+
+
+def get_used_vts() -> set[int]:
+    """Retourne les VT à ne pas utiliser : VT1 (console), VT actif, sessions logind."""
+    used = {1}  # VT1 toujours réservé (console)
+
+    # VT actuellement actif (Hyprland ou SDDM)
+    try:
+        with open("/sys/class/tty/tty0/active") as f:
+            active = f.read().strip()  # ex: "tty2"
+            if active.startswith("tty"):
+                used.add(int(active[3:]))
+    except Exception:
+        pass
+
+    # Sessions logind
+    result = subprocess.run(
+        ["loginctl", "list-sessions", "--no-legend", "--no-pager"],
+        capture_output=True, text=True
+    )
+    for line in result.stdout.splitlines():
+        parts = line.split()
+        # Format: SESSION UID USER SEAT TTY
+        if len(parts) >= 5 and parts[4].startswith("tty"):
+            try:
+                used.add(int(parts[4][3:]))
+            except ValueError:
+                pass
+    return used
+
+
+def find_free_vt(start: int = 3) -> int:
+    """Retourne le premier VT libre à partir de start."""
+    used = get_used_vts()
+    for vt in range(start, 13):
+        if vt not in used:
+            return vt
+    raise RuntimeError("Aucun VT libre disponible (3-12)")
+
+
+def find_free_display(start: int = 1) -> int:
+    """Retourne le premier display X libre (pas de lock file)."""
+    for n in range(start, 10):
+        if not os.path.exists(f"/tmp/.X{n}-lock"):
+            return n
+    raise RuntimeError("Aucun display X libre disponible")
+
+
+def main():
+    vt = find_free_vt()
+    display_n = find_free_display()
+    display = f":{display_n}"
+
+    print(f"→ VT libre: {vt}, display: {display}")
+
+    # Écrit l'info pour switch-display
+    with open(INFO_FILE, "w") as f:
+        f.write(f"vt={vt}\ndisplay={display}\n")
+
+    cmd = [
+        "Xorg", display,
+        f"vt{vt}",
+        "-config", XORG_CONF,
+        "-noreset",
+        "-auth", XAUTH_FILE,
+    ]
+    print(f"→ {' '.join(cmd)}")
+    os.execv("/usr/bin/Xorg", cmd)
+
+
+if __name__ == "__main__":
+    main()

@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+# Wrapper gamescope — injecte automatiquement la résolution et le Hz du client Moonlight.
+# Installé dans /usr/local/bin/gamescope (prioritaire sur /usr/bin/gamescope).
+# Transparent hors session Sunshine (vars absentes → args inchangés).
+
+REAL=/usr/bin/gamescope.real
+PREPEND=()
+
+W="${SUNSHINE_CLIENT_WIDTH:-0}"
+H="${SUNSHINE_CLIENT_HEIGHT:-0}"
+FPS="${SUNSHINE_CLIENT_FPS:-0}"
+
+if (( FPS > 0 )); then
+    PREPEND+=("-r" "$FPS")
+fi
+if (( W > 0 && H > 0 )); then
+    PREPEND+=("-W" "$W" "-H" "$H")
+fi
+
+exec "$REAL" "${PREPEND[@]}" "$@"

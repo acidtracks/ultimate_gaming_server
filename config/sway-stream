@@ -1,0 +1,33 @@
+# sway-stream — compositor headless dédié au streaming Moonlight/Sunshine
+# Tourne sans TTY ni DRM (backend headless) pour éviter le bug DMA-BUF NVIDIA
+
+### Désactive XWayland (socket X0 déjà pris par Hyprland)
+xwayland disable
+
+### Pas de décorations
+default_border none
+default_floating_border none
+gaps inner 0
+gaps outer 0
+
+### Barre invisible
+bar {
+    mode invisible
+}
+
+### Curseur masqué après 1s d'inactivité
+seat * hide_cursor 1000
+
+### Entrée clavier
+input * {
+    xkb_layout fr
+}
+
+### Fullscreen automatique pour toute nouvelle fenêtre
+for_window [class=".*"] fullscreen enable
+for_window [app_id=".*"] fullscreen enable
+
+### Raccourcis d'urgence seulement
+set $mod Mod4
+bindsym $mod+Shift+q kill
+bindsym $mod+Shift+e exec swaymsg exit

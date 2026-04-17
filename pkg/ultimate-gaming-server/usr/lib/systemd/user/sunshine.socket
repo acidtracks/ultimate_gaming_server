@@ -1,0 +1,12 @@
+[Unit]
+Description=Moonlight connection trigger socket for Sunshine
+Conflicts=sunshine.service
+
+[Socket]
+# Accept=yes : systemd accepte la connexion et expose $REMOTE_ADDR dans
+# sunshine@.service, ce qui permet au watchdog de tracker l'IP du client
+# via la table ARP et de garder Sunshine actif tant que Moonlight est ouvert.
+ListenStream=47984
+
+[Install]
+WantedBy=sockets.target
