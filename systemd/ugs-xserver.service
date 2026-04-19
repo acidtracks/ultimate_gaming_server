@@ -8,6 +8,7 @@ User=acidtracks
 Group=acidtracks
 ExecStartPre=/usr/bin/rm -f /tmp/.X1-lock /tmp/.X11-unix/X1
 ExecStart=/usr/bin/xinit /usr/bin/openbox-session -- /usr/bin/X :1 vt8 -novtswitch -nolisten tcp
+ExecStartPost=+/bin/bash -c 'until [ -f /tmp/.X1-lock ]; do sleep 0.2; done; sleep 1; chvt 1'
 Restart=always
 RestartSec=5
 

@@ -1,6 +1,7 @@
 #!/bin/bash
-# Sauvegarde le VT actif et bascule sur le VT Xorg (VT8).
-mkdir -p "${XDG_RUNTIME_DIR:-/run/user/$(id -u)}/ultimate_gaming_server"
-cat /sys/class/tty/tty0/active \
-    > "${XDG_RUNTIME_DIR:-/run/user/$(id -u)}/ultimate_gaming_server/saved-vt"
+# Sauvegarde le VT actif, marque la session de jeu, et bascule sur le VT Xorg (VT8).
+DIR="${XDG_RUNTIME_DIR:-/run/user/$(id -u)}/ultimate_gaming_server"
+mkdir -p "$DIR"
+cat /sys/class/tty/tty0/active > "$DIR/saved-vt"
+touch "$DIR/gaming-session"
 sudo chvt 8

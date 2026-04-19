@@ -1,11 +1,16 @@
 #!/bin/bash
-# Arrête sunshine.service après IDLE_TIMEOUT secondes sans activité Moonlight.
+# Arrête ugs.service après IDLE_TIMEOUT secondes sans activité Moonlight.
 IDLE_TIMEOUT=60
+FLAG="${XDG_RUNTIME_DIR:-/run/user/$(id -u)}/ultimate_gaming_server/gaming-session"
 
 idle=0
 while true; do
     sleep 1
 
+    # Session de jeu active (flag posé par vt-save-switch, retiré par vt-restore)
+    [ -f "$FLAG" ] && { idle=0; continue; }
+
+    # Connexion TCP Moonlight (phase de contrôle/handshake)
     tcp_active=false
     while IFS= read -r line; do
         [[ "$line" =~ ^[0-9] ]] && { tcp_active=true; break; }
