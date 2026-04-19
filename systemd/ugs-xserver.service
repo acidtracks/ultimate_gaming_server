@@ -1,0 +1,15 @@
+[Unit]
+Description=Ultimate Gaming Server — X11 headless (VT8)
+After=systemd-user-sessions.service
+Before=display-manager.service
+
+[Service]
+User=acidtracks
+Group=acidtracks
+ExecStartPre=/usr/bin/rm -f /tmp/.X1-lock /tmp/.X11-unix/X1
+ExecStart=/usr/bin/xinit /usr/bin/openbox-session -- /usr/bin/X :1 vt8 -novtswitch -nolisten tcp
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

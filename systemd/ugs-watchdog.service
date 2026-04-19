@@ -1,0 +1,9 @@
+[Unit]
+Description=Sunshine idle watchdog
+BindsTo=ugs.service
+After=ugs.service
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/sunshine-watchdog
+Restart=no

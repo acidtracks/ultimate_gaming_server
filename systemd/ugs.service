@@ -1,0 +1,13 @@
+[Unit]
+Description=Sunshine Game Stream Server
+Conflicts=ugs.socket
+Wants=ugs-watchdog.service
+
+[Service]
+Environment=DISPLAY=:1
+Environment=XAUTHORITY=/home/acidtracks/.Xauthority
+UnsetEnvironment=WAYLAND_DISPLAY
+ExecStartPre=-/usr/bin/pkill -x sunshine
+ExecStart=/usr/bin/sunshine
+ExecStopPost=systemctl --user --no-block start ugs.socket
+Restart=no

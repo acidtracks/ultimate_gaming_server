@@ -1,37 +1,38 @@
-# Maintainer: acidtracks
+# Maintainer: acidtracks <julien.huchet44@gmail.com>
 pkgname=ultimate-gaming-server
-pkgver=1.0.0
+pkgver=0.1.0
 pkgrel=1
-pkgdesc="Sunshine game streaming + wake-on-LAN setup pour Hyprland/Wayland (moniteur virtuel, watchdog, bascule écran)"
+pkgdesc="Sunshine socket-activated streaming server with headless X11 on VT8"
 arch=('any')
+url="https://github.com/acidtracks/ultimate_gaming_server"
 license=('MIT')
-depends=(
-  'python>=3.11'
-  'sunshine-beta-bin'
-  'hyprland'
-  'iproute2'
-)
-optdepends=(
-  'ethtool: activation du Wake-on-LAN sur la carte réseau'
-)
-install=$pkgname.install
-sha256sums=()
+depends=('sunshine' 'xorg-xinit' 'openbox' 'sudo')
+install=ultimate-gaming-server.install
+backup=("etc/sudoers.d/ultimate_gaming_server")
+source=("git+https://github.com/acidtracks/ultimate_gaming_server.git")
+sha256sums=('SKIP')
 
 package() {
-  cd "$startdir"
+    cd "$srcdir/ultimate_gaming_server"
 
-  local _bindir="$pkgdir/usr/bin"
-  local _systemd="$pkgdir/usr/lib/systemd/user"
+    # Scripts
+    install -Dm755 scripts/vt-save-switch   "$pkgdir/usr/bin/vt-save-switch"
+    install -Dm755 scripts/vt-restore       "$pkgdir/usr/bin/vt-restore"
+    install -Dm755 scripts/sunshine-watchdog "$pkgdir/usr/bin/sunshine-watchdog"
 
-  # Scripts
-  install -Dm755 scripts/start-sunshine            "$_bindir/start-sunshine"
-  install -Dm755 scripts/switch-display            "$_bindir/switch-display"
-  install -Dm755 scripts/sunshine-watchdog         "$_bindir/sunshine-watchdog"
-  install -Dm755 scripts/sunshine-trigger          "$_bindir/sunshine-trigger"
+    # System unit
+    install -Dm644 systemd/ugs-xserver.service \
+        "$pkgdir/usr/lib/systemd/system/ugs-xserver.service"
 
-  # Units systemd utilisateur
-  install -Dm644 systemd/sunshine.service          "$_systemd/sunshine.service"
-  install -Dm644 systemd/sunshine.socket           "$_systemd/sunshine.socket"
-  install -Dm644 systemd/sunshine-watchdog.service "$_systemd/sunshine-watchdog.service"
+    # User units
+    install -Dm644 systemd/ugs.service \
+        "$pkgdir/usr/lib/systemd/user/ugs.service"
+    install -Dm644 systemd/ugs.socket \
+        "$pkgdir/usr/lib/systemd/user/ugs.socket"
+    install -Dm644 systemd/ugs-watchdog.service \
+        "$pkgdir/usr/lib/systemd/user/ugs-watchdog.service"
 
+    # Sudoers
+    install -Dm440 sudoers/ultimate_gaming_server \
+        "$pkgdir/etc/sudoers.d/ultimate_gaming_server"
 }

@@ -1,44 +1,28 @@
 post_install() {
-  echo ""
-  echo "==> ultimate-gaming-server installé."
-  echo ""
-  echo "  1. Copier et éditer la configuration Sunshine :"
-  echo "       cp /usr/share/doc/ultimate-gaming-server/sunshine.conf.example \\"
-  echo "          ~/.config/sunshine/sunshine.conf"
-  echo ""
-  echo "  2. Sauvegarder le portal token Sunshine (une fois Sunshine démarré manuellement) :"
-  echo "       cp ~/.config/sunshine/portal_token \\"
-  echo "          ~/.config/sunshine/portal_token.save"
-  echo ""
-  echo "  3. Activer les services systemd (en tant qu'utilisateur) :"
-  echo "       systemctl --user enable --now sunshine.socket"
-  echo ""
-  echo "  Sunshine démarrera automatiquement à la prochaine connexion Moonlight."
-  echo "  Le watchdog arrêtera Sunshine 60 secondes après déconnexion de Moonlight."
-  echo ""
+    systemctl daemon-reload
+    systemctl enable ugs-xserver.service
+    systemctl --global enable ugs.socket
+
+    echo ""
+    echo "==> ugs-xserver.service activé (X11 headless sur VT8, démarre avant le display manager)"
+    echo "==> ugs.socket activé globalement (déclenche sunshine à la connexion Moonlight)"
+    echo ""
+    echo "==> Pour démarrer sans redémarrer :"
+    echo "      sudo systemctl start ugs-xserver.service"
+    echo "      systemctl --user start ugs.socket"
 }
 
 post_upgrade() {
-  echo ""
-  echo "==> ultimate-gaming-server mis à jour vers $(pacman -Q ultimate-gaming-server | awk '{print $2}')."
-  echo "    Rechargez les units systemd pour appliquer les changements :"
-  echo "      systemctl --user daemon-reload"
-  echo "      systemctl --user restart sunshine.socket"
-  echo ""
+    systemctl daemon-reload
+    systemctl try-restart ugs-xserver.service
+    echo ""
+    echo "==> Pensez à relancer votre session pour recharger les user units."
 }
 
 pre_remove() {
-  echo ""
-  echo "==> Arrêt et désactivation des services..."
-  systemctl --user disable --now sunshine.socket   2>/dev/null || true
-  systemctl --user stop sunshine.service           2>/dev/null || true
-  systemctl --user stop sunshine-watchdog.service  2>/dev/null || true
-}
-
-post_remove() {
-  echo ""
-  echo "==> ultimate-gaming-server désinstallé."
-  echo "    La configuration est conservée dans ~/.config/sunshine/"
-  echo "    Supprimez-la manuellement si nécessaire."
-  echo ""
+    systemctl --user stop ugs.service ugs.socket ugs-watchdog.service 2>/dev/null
+    systemctl stop ugs-xserver.service 2>/dev/null
+    systemctl --global disable ugs.socket
+    systemctl disable ugs-xserver.service
+    systemctl daemon-reload
 }

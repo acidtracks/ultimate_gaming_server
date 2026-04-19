@@ -1,0 +1,9 @@
+[Unit]
+Description=Moonlight connection trigger (Sunshine)
+Conflicts=ugs.service
+
+[Socket]
+ListenStream=47984
+
+[Install]
+WantedBy=sockets.target

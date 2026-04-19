@@ -1,0 +1,17 @@
+pkgbase = ultimate-gaming-server
+	pkgdesc = Sunshine socket-activated streaming server with headless X11 on VT8
+	pkgver = 0.1.0
+	pkgrel = 1
+	url = https://github.com/acidtracks/ultimate_gaming_server
+	install = ultimate-gaming-server.install
+	arch = any
+	license = MIT
+	depends = sunshine
+	depends = xorg-xinit
+	depends = openbox
+	depends = sudo
+	backup = etc/sudoers.d/ultimate_gaming_server
+	source = git+https://github.com/acidtracks/ultimate_gaming_server.git
+	sha256sums = SKIP
+
+pkgname = ultimate-gaming-server

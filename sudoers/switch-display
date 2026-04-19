@@ -1,3 +1,0 @@
-# Permet à acidtracks de basculer les VT sans mot de passe
-# (nécessaire pour switch-display depuis global_prep_cmd de Sunshine)
-acidtracks ALL=(ALL) NOPASSWD: /usr/bin/chvt

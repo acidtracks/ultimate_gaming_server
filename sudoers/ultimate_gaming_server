@@ -1,0 +1,2 @@
+# ultimate_gaming_server — switch VT sans mot de passe
+acidtracks ALL=(ALL) NOPASSWD: /usr/bin/chvt

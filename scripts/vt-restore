@@ -1,0 +1,5 @@
+#!/bin/bash
+# Restaure le VT sauvegardé par vt-save-switch.
+SAVED="${XDG_RUNTIME_DIR:-/run/user/$(id -u)}/ultimate_gaming_server/saved-vt"
+VT=$(cat "$SAVED" 2>/dev/null | tr -d 'tty')
+[ -n "$VT" ] && sudo chvt "$VT"

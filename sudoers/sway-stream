@@ -1,3 +1,0 @@
-# Permet à acidtracks de démarrer/arrêter le service sway-stream sans mot de passe
-# (nécessaire pour que switch-display puisse le contrôler depuis global_prep_cmd de Sunshine)
-acidtracks ALL=(ALL) NOPASSWD: /usr/bin/systemctl start sway-stream.service, /usr/bin/systemctl stop sway-stream.service
