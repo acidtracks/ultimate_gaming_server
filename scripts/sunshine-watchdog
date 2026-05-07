@@ -21,7 +21,7 @@ while true; do
     else
         idle=$((idle + 1))
         if [ "$idle" -ge "$IDLE_TIMEOUT" ]; then
-            systemctl --no-block stop ugs.service
+            sudo systemctl --no-block stop ugs.service
             exit 0
         fi
     fi

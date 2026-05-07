@@ -17,5 +17,5 @@ Environment=__NV_DISABLE_MODESET_CHECK=1
 UnsetEnvironment=WAYLAND_DISPLAY
 ExecStartPre=-/usr/bin/pkill -x sunshine
 ExecStart=/usr/bin/sunshine
-ExecStopPost=systemctl --no-block start ugs.socket
+ExecStopPost=+/usr/bin/systemctl --no-block start ugs.socket
 Restart=no
