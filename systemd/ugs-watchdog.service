@@ -4,6 +4,9 @@ BindsTo=ugs.service
 After=ugs.service
 
 [Service]
+User=acidtracks
+Group=acidtracks
+Environment=XDG_RUNTIME_DIR=/run/user/1000
 Type=simple
 ExecStart=/usr/bin/sunshine-watchdog
 Restart=no

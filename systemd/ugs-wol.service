@@ -1,0 +1,11 @@
+[Unit]
+Description=Ultimate Gaming Server — Wake on LAN
+After=network.target
+
+[Service]
+Type=oneshot
+ExecStart=/bin/bash -c 'source /etc/ultimate_gaming_server/ugs.conf 2>/dev/null; ethtool -s "${WOL_INTERFACE:-lan0}" wol g'
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target

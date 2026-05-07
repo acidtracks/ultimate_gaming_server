@@ -6,4 +6,4 @@ Conflicts=ugs.service
 ListenStream=47984
 
 [Install]
-WantedBy=sockets.target
+WantedBy=multi-user.target

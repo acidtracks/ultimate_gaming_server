@@ -34,8 +34,11 @@ case "$CMD" in
         echo "[$(date +%T)] rc=$? xrandr: $(DISPLAY=:1 xrandr 2>/dev/null | grep 'DP-0 connected')" >> "$LOG"
         ;;
     stop)
+        echo "[$(date +%T)] stop: reset" >> "$LOG"
         ugs-virtual-display-manager reset
+        echo "[$(date +%T)] stop: vt-restore" >> "$LOG"
         vt-restore
+        echo "[$(date +%T)] stop: vt rc=$?" >> "$LOG"
         _hyprctl dispatch dpms on
         _hyprctl keyword misc:mouse_move_enables_dpms true
         _hyprctl keyword misc:key_press_enables_dpms true
