@@ -1,0 +1,47 @@
+#!/bin/bash
+# Hooks Sunshine exécutés avant/après chaque jeu lancé depuis Moonlight.
+#
+# Configuration Sunshine (Web UI > Configuration > General) :
+#   do-cmd   : sunshine-hooks start
+#   undo-cmd : sunshine-hooks stop
+
+_hyprctl() {
+    # Trouve le socket Hyprland actif pour l'utilisateur courant
+    local sock
+    sock=$(ls /run/user/$(id -u)/hypr/ 2>/dev/null | head -1)
+    [ -z "$sock" ] && return 1
+    HYPRLAND_INSTANCE_SIGNATURE="$sock" hyprctl "$@"
+}
+
+LOG="${XDG_CONFIG_HOME:-$HOME/.config}/ultimate_gaming_server/sunshine-hooks.log"
+mkdir -p "$(dirname "$LOG")"
+
+CMD=${1:-start}
+
+case "$CMD" in
+    start)
+        echo "[$(date +%T)] start: W=${SUNSHINE_CLIENT_WIDTH} H=${SUNSHINE_CLIENT_HEIGHT} FPS=${SUNSHINE_CLIENT_FPS}" >> "$LOG"
+        _hyprctl keyword misc:mouse_move_enables_dpms false
+        _hyprctl keyword misc:key_press_enables_dpms false
+        _hyprctl dispatch dpms off
+        vt-save-switch
+        if [ -n "$SUNSHINE_CLIENT_WIDTH" ] && [ -n "$SUNSHINE_CLIENT_HEIGHT" ] && [ -n "$SUNSHINE_CLIENT_FPS" ]; then
+            ugs-virtual-display-manager set-resolution \
+                "$SUNSHINE_CLIENT_WIDTH" "$SUNSHINE_CLIENT_HEIGHT" "$SUNSHINE_CLIENT_FPS" >> "$LOG" 2>&1
+        else
+            ugs-virtual-display-manager set-resolution >> "$LOG" 2>&1
+        fi
+        echo "[$(date +%T)] rc=$? xrandr: $(DISPLAY=:1 xrandr 2>/dev/null | grep 'DP-0 connected')" >> "$LOG"
+        ;;
+    stop)
+        ugs-virtual-display-manager reset
+        vt-restore
+        _hyprctl dispatch dpms on
+        _hyprctl keyword misc:mouse_move_enables_dpms true
+        _hyprctl keyword misc:key_press_enables_dpms true
+        ;;
+    *)
+        echo "Usage: $0 {start|stop}" >&2
+        exit 1
+        ;;
+esac

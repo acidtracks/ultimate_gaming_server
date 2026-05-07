@@ -1,0 +1,4 @@
+#!/bin/bash
+# Configure le moniteur virtuel au démarrage de Xorg (résolution par défaut).
+# Appelé par ugs-xserver.service en ExecStartPost.
+exec ugs-virtual-display-manager set-resolution

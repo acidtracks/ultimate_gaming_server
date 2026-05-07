@@ -1,0 +1,92 @@
+#!/bin/bash
+# Gère l'affichage virtuel (résolution, etc.) via xrandr.
+# Usage: ugs-virtual-display-manager <commande> [args]
+
+CONF=/etc/ultimate_gaming_server/ugs.conf
+[ -f "$CONF" ] && source "$CONF"
+
+DFP=${VIRTUAL_DFP:-DP-0}
+
+_wait_xorg() {
+    for i in $(seq 1 50); do
+        DISPLAY=:1 xrandr &>/dev/null && return 0
+        sleep 0.2
+    done
+    echo "ugs-virtual-display-manager: Xorg non disponible après 10s" >&2
+    return 1
+}
+
+_find_mode() {
+    local W=$1 H=$2 R=$3
+    DISPLAY=:1 xrandr | awk -v w="$W" -v h="$H" -v r="$R" -v out="$DFP" '
+        $0 ~ "^"out" " { in_out=1; next }
+        /^[^ ]/ { in_out=0 }
+        in_out && /^   / {
+            split($1, dim, "x"); gsub(/_.*/, "", dim[2])
+            if (dim[1]+0 == w && dim[2]+0 == h) {
+                for (i=2; i<=NF; i++) {
+                    gsub(/[*+]/, "", $i)
+                    diff = $i - r; if (diff < 0) diff = -diff
+                    if (best == "" || diff < best_diff) { best = $1; best_diff = diff }
+                }
+            }
+        }
+        END { print best }
+    '
+}
+
+_add_mode() {
+    local W=$1 H=$2 R=$3
+
+    # Génère les paramètres du mode via cvt
+    local MODELINE
+    MODELINE=$(cvt "$W" "$H" "$R" | awk '/^Modeline/{$1=""; print $0}' | sed 's/^ //')
+    [ -z "$MODELINE" ] && return 1
+
+    local MODENAME
+    MODENAME=$(echo "$MODELINE" | awk '{print $1}' | tr -d '"')
+
+    DISPLAY=:1 xrandr --newmode $MODELINE 2>/dev/null
+    DISPLAY=:1 xrandr --addmode "$DFP" "$MODENAME" 2>/dev/null
+    echo "$MODENAME"
+}
+
+_apply_resolution() {
+    local W=$1 H=$2 R=$3
+
+    local MODE
+    MODE=$(_find_mode "$W" "$H" "$R")
+
+    if [ -z "$MODE" ]; then
+        # Mode absent — on tente de le créer dynamiquement
+        MODE=$(_add_mode "$W" "$H" "$R")
+        if [ -z "$MODE" ]; then
+            echo "ugs-virtual-display-manager: impossible de créer le mode ${W}x${H}@${R}" >&2
+            return 1
+        fi
+    fi
+
+    local OUT
+    OUT=$(DISPLAY=:1 xrandr --output "$DFP" --mode "$MODE" --rate "$R" --pos 0x0 2>&1)
+    local RC=$?
+    [ $RC -ne 0 ] && echo "ugs-virtual-display-manager: xrandr --mode $MODE failed (rc=$RC): $OUT" >&2
+    return $RC
+}
+
+CMD=${1:-set-resolution}
+
+case "$CMD" in
+    set-resolution)
+        W=${2:-${STREAM_WIDTH:-1920}}
+        H=${3:-${STREAM_HEIGHT:-1080}}
+        R=${4:-${STREAM_REFRESH:-60}}
+        _wait_xorg && _apply_resolution "$W" "$H" "$R"
+        ;;
+    reset)
+        _wait_xorg && _apply_resolution "${STREAM_WIDTH:-1920}" "${STREAM_HEIGHT:-1080}" "${STREAM_REFRESH:-60}"
+        ;;
+    *)
+        echo "Usage: $0 {set-resolution [W H R] | reset}" >&2
+        exit 1
+        ;;
+esac
