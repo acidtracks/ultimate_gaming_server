@@ -5,14 +5,6 @@
 #   do-cmd   : sunshine-hooks start
 #   undo-cmd : sunshine-hooks stop
 
-_hyprctl() {
-    # Trouve le socket Hyprland actif pour l'utilisateur courant
-    local sock
-    sock=$(ls /run/user/$(id -u)/hypr/ 2>/dev/null | head -1)
-    [ -z "$sock" ] && return 1
-    HYPRLAND_INSTANCE_SIGNATURE="$sock" hyprctl "$@"
-}
-
 LOG="${XDG_CONFIG_HOME:-$HOME/.config}/ultimate_gaming_server/sunshine-hooks.log"
 mkdir -p "$(dirname "$LOG")"
 
@@ -21,9 +13,6 @@ CMD=${1:-start}
 case "$CMD" in
     start)
         echo "[$(date +%T)] start: W=${SUNSHINE_CLIENT_WIDTH} H=${SUNSHINE_CLIENT_HEIGHT} FPS=${SUNSHINE_CLIENT_FPS}" >> "$LOG"
-        _hyprctl keyword misc:mouse_move_enables_dpms false
-        _hyprctl keyword misc:key_press_enables_dpms false
-        _hyprctl dispatch dpms off
         vt-save-switch
         if [ -n "$SUNSHINE_CLIENT_WIDTH" ] && [ -n "$SUNSHINE_CLIENT_HEIGHT" ] && [ -n "$SUNSHINE_CLIENT_FPS" ]; then
             ugs-virtual-display-manager set-resolution \
@@ -41,12 +30,6 @@ case "$CMD" in
         vt-restore
         echo "[$(date +%T)] stop: vt rc=$? active=$(cat /sys/class/tty/tty0/active 2>/dev/null)" >> "$LOG"
         sleep 1
-        _hyprctl dispatch dpms on >> "$LOG" 2>&1
-        echo "[$(date +%T)] stop: hyprctl dpms on rc=$?" >> "$LOG"
-        DISPLAY=:0 xset dpms force on >> "$LOG" 2>&1 || true
-        echo "[$(date +%T)] stop: xset dpms force on rc=$?" >> "$LOG"
-        _hyprctl keyword misc:mouse_move_enables_dpms true
-        _hyprctl keyword misc:key_press_enables_dpms true
         ;;
     *)
         echo "Usage: $0 {start|stop}" >&2
