@@ -25,11 +25,6 @@ case "$CMD" in
     stop)
         echo "[$(date +%T)] stop: reset" >> "$LOG"
         ugs-virtual-display-manager reset
-        CONF=/etc/ultimate_gaming_server/ugs.conf
-        [ -f "$CONF" ] && source "$CONF"
-        DFP="${VIRTUAL_DFP:-DP-0}"
-        DISPLAY=:1 xrandr --output "$DFP" --off >> "$LOG" 2>&1 || true
-        echo "[$(date +%T)] stop: dp-off rc=$?" >> "$LOG"
         DIR="/run/ultimate_gaming_server"
         echo "[$(date +%T)] stop: vt-restore saved=$(cat "$DIR/saved-vt" 2>/dev/null)" >> "$LOG"
         vt-restore
