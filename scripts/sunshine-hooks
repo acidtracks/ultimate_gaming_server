@@ -30,7 +30,7 @@ case "$CMD" in
         DFP="${VIRTUAL_DFP:-DP-0}"
         DISPLAY=:1 xrandr --output "$DFP" --off >> "$LOG" 2>&1 || true
         echo "[$(date +%T)] stop: dp-off rc=$?" >> "$LOG"
-        DIR="${XDG_RUNTIME_DIR:-/run/user/$(id -u)}/ultimate_gaming_server"
+        DIR="/run/ultimate_gaming_server"
         echo "[$(date +%T)] stop: vt-restore saved=$(cat "$DIR/saved-vt" 2>/dev/null)" >> "$LOG"
         vt-restore
         echo "[$(date +%T)] stop: vt rc=$? active=$(cat /sys/class/tty/tty0/active 2>/dev/null)" >> "$LOG"

@@ -1,6 +1,5 @@
 #!/bin/bash
-DIR="${XDG_RUNTIME_DIR:-/run/user/$(id -u)}/ultimate_gaming_server"
-mkdir -p "$DIR"
+DIR="/run/ultimate_gaming_server"
 touch "$DIR/gaming-session"
 
 LOG="${XDG_CONFIG_HOME:-$HOME/.config}/ultimate_gaming_server/sunshine-hooks.log"

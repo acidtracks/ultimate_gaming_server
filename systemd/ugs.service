@@ -15,6 +15,8 @@ Environment=PROTON_ENABLE_NVAPI=0
 Environment=GDK_BACKEND=x11
 Environment=__NV_DISABLE_MODESET_CHECK=1
 UnsetEnvironment=WAYLAND_DISPLAY
+RuntimeDirectory=ultimate_gaming_server
+RuntimeDirectoryPreserve=yes
 ExecStartPre=-/usr/bin/pkill -x sunshine
 ExecStart=/usr/bin/sunshine
 ExecStopPost=+/usr/bin/systemctl --no-block start ugs.socket

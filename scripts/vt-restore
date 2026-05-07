@@ -1,7 +1,5 @@
 #!/bin/bash
-# Fin de session de jeu : retour sur la session seat0 (SDDM ou Hyprland).
-# On détermine le VT dynamiquement pour éviter de hardcoder VT1.
-SESSION=$(loginctl list-sessions --no-legend 2>/dev/null | awk '/seat0/{print $1; exit}')
-VT=$(loginctl show-session "$SESSION" --property=VTNr --value 2>/dev/null)
-sudo chvt "${VT:-1}"
-rm -f "${XDG_RUNTIME_DIR:-/run/user/$(id -u)}/ultimate_gaming_server/gaming-session"
+DIR="/run/ultimate_gaming_server"
+SAVED=$(cat "$DIR/saved-vt" 2>/dev/null | sed 's/tty//')
+sudo chvt "${SAVED:-1}"
+rm -f "$DIR/gaming-session" "$DIR/saved-vt"
