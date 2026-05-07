@@ -30,6 +30,13 @@ case "$CMD" in
         vt-restore
         echo "[$(date +%T)] stop: vt rc=$? active=$(cat /sys/class/tty/tty0/active 2>/dev/null)" >> "$LOG"
         sleep 1
+        if [ -n "$(ls /run/user/1000/hypr/ 2>/dev/null)" ]; then
+            echo "[$(date +%T)] stop: hyprland active, skipping sddm restart" >> "$LOG"
+        else
+            echo "[$(date +%T)] stop: no hyprland, restarting sddm" >> "$LOG"
+            sudo systemctl restart sddm
+            echo "[$(date +%T)] stop: sddm rc=$?" >> "$LOG"
+        fi
         ;;
     *)
         echo "Usage: $0 {start|stop}" >&2
