@@ -3,8 +3,10 @@ DIR="${XDG_RUNTIME_DIR:-/run/user/$(id -u)}/ultimate_gaming_server"
 mkdir -p "$DIR"
 touch "$DIR/gaming-session"
 
+LOG="${XDG_CONFIG_HOME:-$HOME/.config}/ultimate_gaming_server/sunshine-hooks.log"
+
 # Find the best VT to restore after gaming.
-# Priority: active user session (Hyprland) > display manager X server (SDDM) > current VT.
+# Priority: active user session (Hyprland) > display manager Xorg VT (SDDM) > current VT.
 _find_target_vt() {
     local vt
     # 1. User session on a VT (logged-in Hyprland etc.)
@@ -15,9 +17,13 @@ _find_target_vt() {
     vt=$(ps -C Xorg -o args= 2>/dev/null | tr ' ' '\n' |
          grep '^vt[0-9]' | grep -v '^vt8$' | head -1 | sed 's/vt/tty/')
     [ -n "$vt" ] && { echo "$vt"; return; }
-    # 3. Current active VT as last resort
+    # 3. Current active VT
     cat /sys/class/tty/tty0/active 2>/dev/null
 }
 
-echo "$(_find_target_vt)" > "$DIR/saved-vt"
+VT=$(_find_target_vt)
+# Absolute fallback: active VT from sysfs
+[ -z "$VT" ] && VT=$(cat /sys/class/tty/tty0/active 2>/dev/null)
+echo "[$(date +%T)] vt-save-switch: target=$VT" >> "$LOG"
+echo "$VT" > "$DIR/saved-vt"
 sudo chvt 8
