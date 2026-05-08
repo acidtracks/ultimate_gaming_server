@@ -1,5 +1,5 @@
 #!/bin/bash
-# Fin de session de jeu : repasse sur VT1 (Hyprland) et retire le flag.
-# Le dpms on sera appelé après, donc le switch est invisible.
-sudo chvt 1
-rm -f "${XDG_RUNTIME_DIR:-/run/user/$(id -u)}/ultimate_gaming_server/gaming-session"
+DIR="/run/ultimate_gaming_server"
+SAVED=$(cat "$DIR/saved-vt" 2>/dev/null | sed 's/tty//')
+sudo chvt "${SAVED:-1}"
+rm -f "$DIR/gaming-session" "$DIR/saved-vt"

@@ -1,1 +1,2 @@
 acidtracks ALL=(root) NOPASSWD: /usr/bin/chvt
+acidtracks ALL=(root) NOPASSWD: /usr/bin/loginctl

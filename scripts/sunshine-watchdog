@@ -1,7 +1,7 @@
 #!/bin/bash
 # Arrête ugs.service après IDLE_TIMEOUT secondes sans activité Moonlight.
 IDLE_TIMEOUT=60
-FLAG="${XDG_RUNTIME_DIR:-/run/user/$(id -u)}/ultimate_gaming_server/gaming-session"
+FLAG="/run/ultimate_gaming_server/gaming-session"
 
 idle=0
 while true; do
@@ -21,7 +21,7 @@ while true; do
     else
         idle=$((idle + 1))
         if [ "$idle" -ge "$IDLE_TIMEOUT" ]; then
-            systemctl --user --no-block stop ugs.service
+            sudo systemctl --no-block stop ugs.service
             exit 0
         fi
     fi

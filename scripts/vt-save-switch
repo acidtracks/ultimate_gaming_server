@@ -1,7 +1,28 @@
 #!/bin/bash
-# Début de session de jeu : bascule sur VT8 (X :1) et pose le flag.
-# Le dpms off a déjà été appelé avant, donc le switch est invisible.
-DIR="${XDG_RUNTIME_DIR:-/run/user/$(id -u)}/ultimate_gaming_server"
-mkdir -p "$DIR"
+DIR="/run/ultimate_gaming_server"
 touch "$DIR/gaming-session"
+
+LOG="${XDG_CONFIG_HOME:-$HOME/.config}/ultimate_gaming_server/sunshine-hooks.log"
+
+# Find the best VT to restore after gaming.
+# Priority: active user session (Hyprland) > display manager Xorg VT (SDDM) > current VT.
+_find_target_vt() {
+    local vt
+    # 1. User session on a VT (logged-in Hyprland etc.)
+    vt=$(loginctl list-sessions --no-legend 2>/dev/null |
+         awk '$6 == "user" && $7 ~ /^tty[0-9]+$/ && $7 != "tty8" {print $7; exit}')
+    [ -n "$vt" ] && { echo "$vt"; return; }
+    # 2. Display manager Xorg VT (SDDM in WoL, no user session)
+    vt=$(ps -C Xorg -o args= 2>/dev/null | tr ' ' '\n' |
+         grep '^vt[0-9]' | grep -v '^vt8$' | head -1 | sed 's/vt/tty/')
+    [ -n "$vt" ] && { echo "$vt"; return; }
+    # 3. Current active VT
+    cat /sys/class/tty/tty0/active 2>/dev/null
+}
+
+VT=$(_find_target_vt)
+# Absolute fallback: active VT from sysfs
+[ -z "$VT" ] && VT=$(cat /sys/class/tty/tty0/active 2>/dev/null)
+echo "[$(date +%T)] vt-save-switch: target=$VT" >> "$LOG"
+echo "$VT" > "$DIR/saved-vt"
 sudo chvt 8
