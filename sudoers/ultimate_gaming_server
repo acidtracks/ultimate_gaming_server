@@ -1,4 +1,3 @@
 # ultimate_gaming_server — droits sudo nécessaires au service
 acidtracks ALL=(root) NOPASSWD: /usr/bin/chvt
 acidtracks ALL=(root) NOPASSWD: /usr/bin/systemctl --no-block stop ugs.service
-acidtracks ALL=(root) NOPASSWD: /usr/bin/systemctl restart sddm

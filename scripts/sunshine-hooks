@@ -12,7 +12,7 @@ CMD=${1:-start}
 
 case "$CMD" in
     start)
-        echo "[$(date +%T)] start: W=${SUNSHINE_CLIENT_WIDTH} H=${SUNSHINE_CLIENT_HEIGHT} FPS=${SUNSHINE_CLIENT_FPS}" >> "$LOG"
+        echo "[$(date +%T)] start: client=${SUNSHINE_CLIENT_HOST} app=${SUNSHINE_APP_NAME} W=${SUNSHINE_CLIENT_WIDTH} H=${SUNSHINE_CLIENT_HEIGHT} FPS=${SUNSHINE_CLIENT_FPS}" >> "$LOG"
         vt-save-switch
         if [ -n "$SUNSHINE_CLIENT_WIDTH" ] && [ -n "$SUNSHINE_CLIENT_HEIGHT" ] && [ -n "$SUNSHINE_CLIENT_FPS" ]; then
             ugs-virtual-display-manager set-resolution \
@@ -29,14 +29,6 @@ case "$CMD" in
         echo "[$(date +%T)] stop: vt-restore saved=$(cat "$DIR/saved-vt" 2>/dev/null)" >> "$LOG"
         vt-restore
         echo "[$(date +%T)] stop: vt rc=$? active=$(cat /sys/class/tty/tty0/active 2>/dev/null)" >> "$LOG"
-        sleep 1
-        if [ -n "$(ls /run/user/1000/hypr/ 2>/dev/null)" ]; then
-            echo "[$(date +%T)] stop: hyprland active, skipping sddm restart" >> "$LOG"
-        else
-            echo "[$(date +%T)] stop: no hyprland, restarting sddm" >> "$LOG"
-            sudo systemctl restart sddm
-            echo "[$(date +%T)] stop: sddm rc=$?" >> "$LOG"
-        fi
         ;;
     *)
         echo "Usage: $0 {start|stop}" >&2
